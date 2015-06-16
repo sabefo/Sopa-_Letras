@@ -1,5 +1,3 @@
-
-
 class Board
 # You should put here the given boards templates
   @@boards_templates = [[["POEMA", "CANCION", "RONDAS", "RIMAS"],"POEMAXCXXXXAXXSXNXAAXCMXDXIXXNROXXOXNXXR"],
@@ -19,25 +17,33 @@ class Board
    puts
    puts "Sopa"
    puts
-   puts @tabla.map{|x| x.join}
+   puts @tabla.map{|x| x.join("  ")}
    puts
    puts "Palabras a buscar"
    p @palabras
-  ""
   end
 
   def busca
+    puts
+    puts "Busqueda horizontal"
+    puts
+    puts @tabla.map{|x| x.join("  ")}
+
     for i in 0...@palabras.length
-      puts "vamos a buscar: #{@palabras[i]}"
+      puts "Vamos a buscar: #{@palabras[i]}"
       horizontal(@palabras[i])
     end
     puts
-    puts "cambio de busqueda"
+    puts "Busqueda vertical"
+    puts
     @transpuesta = @tabla.transpose
-    puts @transpuesta.map{|x| x.join}
+    puts @transpuesta.map{|x| x.join("  ")}
     
     @palabras.each{|x| vertical(x)}
-
+    puts
+    puts "Diagonal"
+    @espacios = mete_espacios
+    @palabras.each{|x| diagonal(x)}
     puts "Se encontraron"
     p @buenas
   end
@@ -55,15 +61,11 @@ class Board
   def mix!(n)
     #This method should select an incomplete board and complete the board with random data.
     tabla = []
-#    tabla << @@boards_templates[n]
     tabla = @@boards_templates[n]
     tablero = []
-#    tablero << tabla[0][1]
     tablero = tabla[1]
-#    tablero_bueno = tablero.join(",")
     arreglo_aux = []
     #AQUI PERDIMOS EL STRING, LO HICIMOS PARA PODER ITERAR SOBRE LA PALABRA
-#    arreglo_aux << tablero.split("")
     arreglo_aux = tablero.split("")
     abecedario = ("A".."Z").to_a
     arreglo_aux.each_with_index { |x, i|
@@ -72,52 +74,21 @@ class Board
       arreglo_aux[i] = abecedario[n]
     end
     }
-#    palabra_join = arreglo_aux.join("")
     arreglo_final = []
-#    for i in 0...8
-      palabra = arreglo_aux.each_slice(5).to_a
-#      arreglo_aux = arreglo_aux.sub(palabra,"")
-#      arreglo_final << palabra.split
-#    end
-    palabra
+    palabra = arreglo_aux.each_slice(5).to_a
+#    p palabra[0]
   end
 
   def horizontal(palabra)
     if palabra.size > @tabla[0].length
       return
     else
-      col, ren = 0, 0
+      ren = 0
       while ren < @tabla.length #8
-        while col < @tabla[0].length #5
-          puts "estamos en este dato: #{@tabla[ren][col]}"
-          if (palabra[0] == @tabla[ren][col] || palabra[-1] == @tabla[ren][col])
-            puts "algo coincidio"
-            #ENCONTRE UNA PALABRA
-            puts "este es el size de la palabra que busco: #{palabra.length}"
-#CAMBIAMOS LOS INDICES, DECIA 0,COL
-            a_probar = @tabla[ren].slice(col, palabra.length).join("")
-            p "esto es lo que probaremos: #{a_probar}"
-            #SI SON DEL MISMO SIZE
-            if a_probar.length == palabra.length
-              puts "estamos probando"
-              if a_probar == palabra
-                puts "intentamos meter"
-                @buenas << palabra
-                return
-              elsif a_probar.reverse == palabra
-                puts "intentamos meter"
-                @buenas << palabra
-                return
-              end
-            end
-          end
-          col += 1
-          if col == @tabla[0].length
-            puts "hacemos cambio de renglon"
-            ren += 1
-          end
+        if @tabla[ren].join.include?(palabra) || @tabla[ren].join.include?(palabra.reverse)
+          @buenas << palabra
         end
-        col = 0
+        ren += 1
       end
     end
   end
@@ -126,54 +97,42 @@ class Board
     if palabra.size > @transpuesta[0].length
       return
     else
-      col, ren = 0, 0
-      while ren < @transpuesta.length #8
-        while col < @transpuesta[0].length #5
-          puts "estamos en este dato: #{@transpuesta[ren][col]}"
-          if (palabra[0] == @transpuesta[ren][col] || palabra[-1] == @transpuesta[ren][col])
-            puts "algo coincidio"
-            #ENCONTRE UNA PALABRA
-            puts "este es el size de la palabra que busco: #{palabra.length}"
-#CAMBIAMOS LOS INDICES, DECIA 0,COL
-            a_probar = @transpuesta[ren].slice(col, palabra.length).join("")
-            p "esto es lo que probaremos: #{a_probar}"
-            #SI SON DEL MISMO SIZE
-            if a_probar.length == palabra.length
-              puts "estamos probando"
-              if a_probar == palabra
-                puts "intentamos meter"
-                @buenas << palabra
-                return
-              elsif a_probar.reverse == palabra
-                puts "intentamos meter"
-                @buenas << palabra
-                return
-              end
-            end
-          end
-          col += 1
-          if col == @transpuesta[0].length
-            puts "hacemos cambio de renglon"
-            ren += 1
-          end
+      ren = 0
+      while ren < @transpuesta.length #5
+        if @transpuesta[ren].join.include?(palabra) || @transpuesta[ren].join.include?(palabra.reverse)
+          @buenas << palabra
         end
-        col = 0
+        ren += 1
       end
-    end  end
+    end  
+  end
 
+  def mete_espacios
+    aux = @tabla.dup
+    n = @tabla.length - 1
+    for i in 0...@tabla.length
+      i.times{aux[i].insert(0," ")}
+      (n - i).times{aux[i].push(" ")}
+    end
+    aux = aux.transpose
+  end
 
-
-
-
+  def diagonal(palabra)
+    if palabra.size > @espacios[0].length
+      return
+    else
+      @espacios.each{  |renglon|
+      if renglon.join.include?(palabra) || renglon.join.include?(palabra.reverse)
+        @buenas << palabra
+      end
+      }
+    end
+  end
 end
 
 board = Board.new
-puts board
+#puts board
 puts board.busca
-
-
-
-
 
 
 
